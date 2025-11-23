@@ -1,0 +1,2 @@
+// Erro: tipo incompatível
+program Test; main { let x:int="abc"; }

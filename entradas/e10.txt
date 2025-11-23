@@ -1,0 +1,2 @@
+// OK
+program T5; main { let s:string="Oi"; print(s); }

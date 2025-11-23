@@ -1,0 +1,2 @@
+// Erro: falta main
+program Test; let x:int=2;

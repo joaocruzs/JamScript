@@ -1,0 +1,2 @@
+// OK
+program T3; function f(a:int):int { return a+1; } main { print(f(2)); }

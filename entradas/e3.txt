@@ -1,0 +1,2 @@
+// Erro: struct campo inexistente
+program Test; struct P{let a:int;} ; main { let p:P; p.b=1; }
