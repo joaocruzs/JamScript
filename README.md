@@ -29,3 +29,11 @@ antlr4 -Dlanguage=Python3 JamScript.g4
 ```bash
 python main.py entradas/e1.txt
 ```
+
+## Front-end
+Para percorrer todos os exemplos basta:
+```bash
+python tests.py --all
+```
+
+pode substituir `-all` por `--erros` caso desejar apenas erros e `--ok` se desejar apeans os certos.
