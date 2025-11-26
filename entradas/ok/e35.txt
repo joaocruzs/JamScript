@@ -1,0 +1,27 @@
+program Test;
+struct Coord {
+    let x: int;
+    let y: int;
+}
+
+function somaVet(a:Coord, b:Coord): Coord {
+    let x: int;
+    let y: int;
+    x = a.x + b.x;
+    y = a.y + b.y;
+    let r:Coord;
+    r.x = x;
+    r.y = y;
+    return r;
+}
+
+main { 
+    let m:Coord;
+    let n:Coord;
+    m.x = 2; m.y = 3;
+    n.x = 30; n.y = 50;
+    let z:Coord;
+    z = somaVet(m, n);
+    print(z.x);
+    print(z.y);
+}
