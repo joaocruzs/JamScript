@@ -27,7 +27,7 @@ antlr4 -Dlanguage=Python3 JamScript.g4
 5. 
 
 ```bash
-python main.py entradas/e1.txt
+python main.py entradas/erros/e1.txt
 ```
 
 ## Front-end
