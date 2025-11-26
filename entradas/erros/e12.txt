@@ -1,0 +1,6 @@
+// Erro: atribuição a constante
+program Test;
+main {
+    const x:int = 10;
+    x = 20;
+}

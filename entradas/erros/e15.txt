@@ -1,0 +1,6 @@
+// Erro: return sem valor em função int
+program Test;
+function f():int {
+    return;
+}
+main { }

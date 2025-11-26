@@ -1,0 +1,6 @@
+// Erro: redeclaração no mesmo escopo
+program Test;
+main {
+    let x:int = 2;
+    let x:int = 3;
+}

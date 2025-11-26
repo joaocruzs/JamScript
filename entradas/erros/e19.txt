@@ -1,0 +1,7 @@
+// Erro: operação inválida (bool + int), tipos incompatíveis
+program Test;
+main {
+    let a:bool = true;
+    let b:int = 5;
+    let c:int = a + b;
+}

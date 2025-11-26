@@ -1,0 +1,10 @@
+// OK. Campos aninhados
+program Test;
+
+struct A { let x:int; }
+struct B { let a:A; }
+
+main {
+    let b:B;
+    print(b.a.x);
+}

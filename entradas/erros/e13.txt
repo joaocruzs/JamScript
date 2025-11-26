@@ -1,0 +1,6 @@
+// Erro: função int sem return
+program Test;
+function f(a:int):int {
+    let x:int = a + 1;
+} 
+main { }

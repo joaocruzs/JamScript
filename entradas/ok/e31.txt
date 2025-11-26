@@ -1,0 +1,17 @@
+// OK Struct + funções + retorno
+program Test;
+
+struct P {
+    let x:int;
+    let y:int;
+}
+
+function soma(p:P):int {
+    return p.x + p.y;
+}
+
+main {
+    let a:P;
+    let resultado:int = soma(a);
+    print(resultado);
+}

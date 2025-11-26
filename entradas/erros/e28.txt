@@ -1,0 +1,6 @@
+// Erro: variável com nome de função
+program Test;
+function f():int { return 1; }
+main {
+    let f:int = 10;   // conflito
+}

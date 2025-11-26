@@ -1,0 +1,5 @@
+// Erro: input() com expressão ao invés de ID
+program Test;
+main {
+    input(1+2);
+}

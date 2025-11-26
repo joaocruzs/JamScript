@@ -1,0 +1,4 @@
+// Erro: dois mains no programa
+program Test;
+main { }
+main { }

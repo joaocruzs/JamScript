@@ -1,0 +1,10 @@
+// OK. Funções encadeadas
+program Test;
+
+function inc(a:int):int { return a+1; }
+function dup(a:int):int { return a*2; }
+function f(a:int):int { return dup(inc(a)); }
+
+main {
+    print(f(3));
+}
