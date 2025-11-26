@@ -1,7 +1,7 @@
 import sys
 from antlr4 import *
-from JamScriptLexer import JamScriptLexer
-from JamScriptParser import JamScriptParser
+from antlr.JamScriptLexer import JamScriptLexer
+from antlr.JamScriptParser import JamScriptParser
 from Driver import MyErrorListener
 
 
