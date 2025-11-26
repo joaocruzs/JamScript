@@ -23,7 +23,7 @@ antlr4 -Dlanguage=Python3 JamScript.g4
 ```
 
 3. Criamos arquivo `Semantica.py` , para usarmos `JamScriptLexer` e `JamScriptParser`;
-4. Criamos arquivo ``Main.py`, para usarmos semantic;
+4. Criamos arquivo `Main.py`, para usarmos semantic;
 5. 
 
 ```bash
