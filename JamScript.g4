@@ -38,7 +38,7 @@ varDecl
 
 // 4. Declaração de funções
 funcDecl
-    : 'function' ID '(' paramList? ')' ':' type_ block
+    : FUNCTION ID '(' paramList? ')' ':' type_ block
     ;
 
 paramList
