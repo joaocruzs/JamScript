@@ -1,0 +1,5 @@
+// Erro léxico: string não finalizada
+program Test;
+main {
+    let s:string = "texto sem fim;
+}
