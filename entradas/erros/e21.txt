@@ -1,0 +1,5 @@
+// Erro: struct inexistente
+program Test;
+main {
+    let p:Pessoa;
+}

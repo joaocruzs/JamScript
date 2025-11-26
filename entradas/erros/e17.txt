@@ -1,0 +1,8 @@
+// Erro: Tipos incompatíveis na chamada da função
+program Test;
+function inc(a:int):int {
+    return a + 1;
+}
+main {
+    print( inc("abc") );   // string no lugar de int
+}

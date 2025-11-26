@@ -1,0 +1,19 @@
+// OK. Controle de fluxo completo
+program Test;
+
+main {
+    let i:int = 0;
+
+    while (i < 3) {
+        if (i == 1) {
+            print("um");
+        } else {
+            print("outro");
+        }
+        i++;
+    }
+
+    for (let j:int=0; j<2; j++) {
+        print(j);
+    }
+}

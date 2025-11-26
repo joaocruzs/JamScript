@@ -1,0 +1,5 @@
+// Erro: função duplicada
+program Test;
+function f():void { }
+function f(a:int):int { return a; }
+main { }

@@ -1,0 +1,6 @@
+// Erro: declaração após comando no bloco
+program Test;
+main {
+    print(1);
+    let x:int = 5;
+}
