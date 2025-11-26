@@ -12,7 +12,7 @@ grammar JamScript;
 // ======================
 
 program
-    : 'program' ID ';' decl* structDecl* funcDecl* mainBlock EOF
+    : 'program' ID ';' structDecl* funcDecl* mainBlock EOF
     ;
 
 //1. Tipos básicos e derivados: declarações
@@ -21,17 +21,19 @@ decl
     ;
 
 structDecl
-    : 'struct' ID '{' structField* '}' ';'
+    // struct NÃO termina com ';' (corrigido)
+    : 'struct' ID '{' structField* '}'
     ;
 
 structField
-    : ('let' | 'const') ID ':' type_ ';'
+    : ('let') ID ':' type_ ';'
     ;
 
-// 3.1 Sinttaxe geral: variáveis e constantes
+// 3.1 Sintaxe geral: variáveis e constantes
 varDecl
-    : ('let' | 'const') ID ':' type_ ('=' expr)? ';'
-    | ('let' | 'const') ID (',' ID)* ':' type_ ';'
+    // múltiplas variáveis NÃO são permitidas → removido (',' ID)*
+    : 'let' ID ':' type_ ('=' expr)? ';'
+    | 'const' ID ':' type_ '=' expr ';'
     ;
 
 // 4. Declaração de funções
@@ -54,6 +56,7 @@ mainBlock
     ;
 
 block
+    // Permite decls e stmts, verificação semântica impede decls após stmts
     : '{' decl* stmt* '}'
     ;
 
@@ -70,6 +73,7 @@ simpleStmt
     | callStmt ';'
     | returnStmt ';'
     | varDecl
+    | 'break' ';'
     ;
 
 assignStmt
@@ -85,7 +89,7 @@ leftHandSide
 callStmt
     : printStmt
     | inputStmt
-    | ID '(' argList? ')'
+    | functionCall
     ;
 
 printStmt
@@ -114,8 +118,10 @@ forStmt
     ;
 
 forInit
-    : ('let' | 'const') ID ':' type_ ('=' expr)?   
-    | ID '=' expr                                  
+    // declaração sem ';'
+    : 'let' ID ':' type_ ('=' expr)?
+    | 'const' ID ':' type_ '=' expr
+    | assignNoSemi
     ;
 
 forUpdate
@@ -135,33 +141,65 @@ incExpr
     ;
 
 returnStmt
-    : 'return' expr
+    : 'return' expr?
     ;
 
 // 2. Operadores
-//2.5 Precedência de operadores em expressões
+//2.5 Precedência de operadores em expressões (SEM left recursion)
 expr
-    : expr '||' expr                             # OrExpr
-    | expr '&&' expr                             # AndExpr
-    | expr ('==' | '!=') expr                    # EqExpr
-    | expr ('>' | '<' | '>=' | '<=') expr        # RelExpr
-    | expr ('+' | '-') expr                      # AddSubExpr
-    | expr ('*' | '/') expr                      # MulDivExpr
-    | ('!' | '-') expr                           # UnaryExpr
-    | ID '++'                                    # PostIncExpr
-    | ID '--'                                    # PostDecExpr
-    | '++' ID                                    # PreIncExpr
-    | '--' ID                                    # PreDecExpr
-    | '(' expr ')'                               # ParenExpr
-    | leftHandSide                               # FieldOrIdExpr
-    | ID '(' argList? ')'                        # FuncCallExpr
-    | NUMBER                                     # NumberExpr
-    | FLOAT                                      # FloatExpr
-    | STRING                                     # StringExpr
-    | BOOL                                       # BoolExpr
+    : orExpr
     ;
 
-// Lista de argumentos para chamadas
+orExpr
+    : andExpr ( '||' andExpr )*
+    ;
+
+andExpr
+    : eqExpr ( '&&' eqExpr )*
+    ;
+
+eqExpr
+    : relExpr ( ('==' | '!=') relExpr )*
+    ;
+
+relExpr
+    // Apenas > e < — >= e <= foram removidos conforme PDF
+    : addExpr ( ('>' | '<') addExpr )*
+    ;
+
+addExpr
+    : mulExpr ( ('+' | '-') mulExpr )*
+    ;
+
+mulExpr
+    : unaryExpr ( ('*' | '/') unaryExpr )*
+    ;
+
+unaryExpr
+    // operadores unários e pré-incremento
+    : ('!' | '-' | '++' | '--') unaryExpr
+    | postfixExpr
+    ;
+
+postfixExpr
+    // pós-incremento/decremento
+    : primary ('++' | '--')?
+    ;
+
+primary
+    : NUMBER
+    | FLOAT
+    | STRING
+    | BOOL
+    | leftHandSide
+    | functionCall
+    | '(' expr ')'
+    ;
+
+functionCall
+    : ID '(' argList? ')'
+    ;
+
 argList
     : expr (',' expr)*
     ;
@@ -186,7 +224,6 @@ NUMBER      : [0-9]+ ;
 STRING      : '"' (~["\r\n])* '"' ;
 
 // 2. Operadores e pontuação
-//(tokens explícitos para evitar ambiguidade)
 PLUS        : '+' ;
 MINUS       : '-' ;
 STAR        : '*' ;
@@ -196,8 +233,6 @@ EQEQ        : '==' ;
 NEQ         : '!=' ;
 GT          : '>' ;
 LT          : '<' ;
-GE          : '>=' ;
-LE          : '<=' ;
 AND         : '&&' ;
 OR          : '||' ;
 NOT         : '!' ;
@@ -226,6 +261,6 @@ PRINT       : 'print' ;
 INPUT       : 'input' ;
 
 // 3. Comentários e Whitespace
-WS          : [ \t\r\n]+ -> skip ;
-LINE_COMMENT: '//' ~[\r\n]* -> skip ;
-BLOCK_COMMENT: '/*' .*? '*/' -> skip ;
+WS              : [ \t\r\n]+ -> skip ;
+LINE_COMMENT    : '//' ~[\r\n]* -> skip ;
+BLOCK_COMMENT   : '/*' .*? '*/' -> skip ;
