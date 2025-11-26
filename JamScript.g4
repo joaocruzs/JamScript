@@ -21,7 +21,7 @@ decl
     ;
 
 structDecl
-    : 'struct' ID '{' structField* '}' ';'
+    : 'struct' ID '{' structField* '}'
     ;
 
 structField
@@ -36,7 +36,7 @@ varDecl
 
 // 4. Declaração de funções
 funcDecl
-    : 'function' ID '(' paramList? ')' ':' type_ block
+    : FUNCTION ID '(' paramList? ')' ':' type_ block
     ;
 
 paramList
@@ -178,12 +178,7 @@ type_
     | ID             
     ;
 
-// 1. Literais e tokens
-BOOL        : 'true' | 'false' ;
-ID          : [a-zA-Z_][a-zA-Z0-9_]* ;
-FLOAT       : [0-9]+ '.' [0-9]+ ;
-NUMBER      : [0-9]+ ;
-STRING      : '"' (~["\r\n])* '"' ;
+
 
 // 2. Operadores e pontuação
 //(tokens explícitos para evitar ambiguidade)
@@ -229,3 +224,10 @@ INPUT       : 'input' ;
 WS          : [ \t\r\n]+ -> skip ;
 LINE_COMMENT: '//' ~[\r\n]* -> skip ;
 BLOCK_COMMENT: '/*' .*? '*/' -> skip ;
+
+// 1. Literais e tokens
+BOOL        : 'true' | 'false' ;
+ID          : [a-zA-Z_][a-zA-Z0-9_]* ;
+FLOAT       : [0-9]+ '.' [0-9]+ ;
+NUMBER      : [0-9]+ ;
+STRING      : '"' (~["\r\n])* '"' ;
