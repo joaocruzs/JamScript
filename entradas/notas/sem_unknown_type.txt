@@ -1,0 +1,2 @@
+// Erro Semantico: tipo inexistente
+program Test; main { let p:XYZ; }

@@ -1,0 +1,2 @@
+// Erro Semantico: atribuicao incompatível
+program Test; main { let x:int="ola"; }

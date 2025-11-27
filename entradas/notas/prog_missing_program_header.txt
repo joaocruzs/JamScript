@@ -1,0 +1,2 @@
+// Erro Estrutural: falta program header
+let x:int=2;

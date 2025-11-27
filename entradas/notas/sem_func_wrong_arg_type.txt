@@ -1,0 +1,2 @@
+// Erro Semantico: tipo errado em argumento
+program Test; function f(a:int):int { return a; } main { f(true); }

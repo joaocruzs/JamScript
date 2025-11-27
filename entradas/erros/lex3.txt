@@ -1,5 +1,6 @@
-// ERRO LÉXICO: número inválido "10..5"
+// ERRO LÉXICO: comentário não fechado
 program Test;
 main {
-    let x:float = 10..5;
+    /* comentário que nunca fecha
+    let x:int = 10;
 }

@@ -1,0 +1,2 @@
+// Erro Lexico: comentário de bloco não fechado
+program Test; /* comentario

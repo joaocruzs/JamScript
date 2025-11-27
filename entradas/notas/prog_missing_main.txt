@@ -1,0 +1,2 @@
+// Erro Estrutural: falta main
+program Test; let x:int;

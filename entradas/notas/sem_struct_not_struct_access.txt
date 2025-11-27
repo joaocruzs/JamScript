@@ -1,0 +1,2 @@
+// Erro Semantico: acesso de campo em tipo nao-struct
+program Test; main { let x:int; x.y=1; }

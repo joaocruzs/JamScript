@@ -1,0 +1,2 @@
+// Erro Semantico: incremento invalido no for
+program Test; main { for (let i:int=0; i<10; "ola") {} }

@@ -1,0 +1,2 @@
+// Erro Semantico: funcao sem retorno
+program Test; function f(a:int):int { let x:int=2; } main{}

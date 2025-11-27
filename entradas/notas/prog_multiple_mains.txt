@@ -1,0 +1,2 @@
+// Erro Estrutural: multiplos mains
+program Test; main{} main{}

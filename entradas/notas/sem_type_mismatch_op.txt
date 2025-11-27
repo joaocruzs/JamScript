@@ -1,0 +1,2 @@
+// Erro Semantico: operacao entre tipos invalidos
+program Test; main { let x:int=true+1; }

@@ -1,0 +1,2 @@
+// Erro Semantico: input em não-variável
+program Test; main { input(2+3); }

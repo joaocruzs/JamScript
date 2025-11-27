@@ -1,0 +1,2 @@
+// Erro Lexico: caractere inválido
+program Test; @

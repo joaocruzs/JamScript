@@ -1,0 +1,2 @@
+// Erro Semantico: tipo invalido em input
+program Test; main { let b:bool; input(b); }

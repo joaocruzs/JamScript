@@ -1,0 +1,2 @@
+// Erro Semantico: comparacao invalida
+program Test; struct P{let x:int;} ; main { let p:P; if (p < 2) {} }

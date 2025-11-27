@@ -1,0 +1,2 @@
+// Erro Semantico: atribuicao em const
+program Test; main { const x:int=2; x=3; }

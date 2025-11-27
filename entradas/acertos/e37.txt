@@ -1,2 +1,2 @@
 // OK
-program T2; struct P{let x:int;} ; main { let a:P; }
+program T2; struct P{let x:int;} main { let a:P; }

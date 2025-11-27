@@ -1,0 +1,2 @@
+// Erro Sintatico: else sem if
+program Test; else { print(1); }

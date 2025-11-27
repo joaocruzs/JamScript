@@ -1,0 +1,2 @@
+// Erro Semantico: campo inexistente
+program Test; struct P{let x:int;} ; main { let p:P; p.y=2; }

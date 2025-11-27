@@ -1,0 +1,2 @@
+// Erro Sintatico: chave faltando
+program Test; if (true) { print("ok");

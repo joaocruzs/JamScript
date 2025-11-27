@@ -1,0 +1,2 @@
+// Erro Semantico: tipo struct inexistente
+program Test; main { let p:Coord; }

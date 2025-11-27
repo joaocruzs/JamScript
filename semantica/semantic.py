@@ -432,73 +432,61 @@ class SemanticAnalyzer(JamScriptVisitor):
 
     def visitForInit(self, ctx: JamScriptParser.ForInitContext):
 
-        # 1) Caso seja assignNoSemi: leftHandSide = expr
+        # Caso seja atribuição simples: leftHandSide = expr
         if ctx.assignNoSemi():
             return self.visit(ctx.assignNoSemi())
 
-        # 2) Caso seja LET ou CONST
-        if ctx.LET() or ctx.CONST():
-            is_const = ctx.CONST() is not None
+        # Caso LET ou CONST
+        is_const = ctx.CONST() is not None
 
-            # Agora de forma correta: ctx.ID() é UM TerminalNodeImpl
-            id_node = ctx.ID()
-            if id_node is None:
-                self.error(ctx, "Inicialização do for sem identificador.")
-                return None
+        name = ctx.ID().getText()
+        declared_type_name = ctx.type_().getText()
 
-            name = id_node.getText()
+        declared_type = self.resolve_type_name(declared_type_name)
+        if declared_type is None:
+            self.error(ctx, f"Tipo '{declared_type_name}' não declarado.")
+            declared_type = declared_type_name
 
-            # Tipo declarado
-            type_node = ctx.type_()
-            if type_node is None:
-                self.error(ctx, f"Tipo não informado na inicialização do for para '{name}'.")
-                return None
+        # define variável no escopo
+        try:
+            self.stmgr.define(VarSymbol(name, declared_type, is_const=is_const))
+        except Exception as e:
+            self.error(ctx, str(e))
 
-            type_name = type_node.getText()
-            declared_type = self.resolve_type_name(type_name)
-            if declared_type is None:
-                self.error(ctx, f"Tipo '{type_name}' não declarado.")
-                declared_type = type_name
-
-            # Registrar variável no escopo atual
-            try:
-                self.stmgr.define(VarSymbol(name, declared_type, is_const=is_const))
-            except Exception as e:
-                self.error(ctx, str(e))
-
-            # Verificar inicialização com '=' caso exista expr
-            if ctx.expr():
-                val_type = self.visit(ctx.expr())
-                if not self.can_assign(declared_type, val_type):
-                    self.error(
-                        ctx,
-                        f"Tipo incompatível na inicialização do for: "
-                        f"{self.type_to_str(declared_type)} <- {self.type_to_str(val_type)}"
-                    )
+        # expressão opcional em LET, obrigatória em CONST
+        init_expr = ctx.expr()
+        if init_expr:
+            val_type = self.visit(init_expr)
+            if not self.can_assign(declared_type, val_type):
+                self.error(
+                    ctx,
+                    f"Tipo incompatível na inicialização do for: "
+                    f"{self.type_to_str(declared_type)} <- {self.type_to_str(val_type)}"
+                )
 
         return None
 
-
     def visitForStmt(self, ctx: JamScriptParser.ForStmtContext):
-        # escopo do for
+
+        # cria escopo do for
         self.stmgr.push_scope("for")
 
-        # 1) inicialização
-        if ctx.forInit():
-            self.visit(ctx.forInit())
+        # 1) inicialização — obrigatório pela gramática
+        self.visit(ctx.forInit())
 
-        # 2) condição (expr?) — apenas UM expr
+        # 2) condição — obrigatório e único
         cond_expr = ctx.expr()
-        if cond_expr is not None:
-            cond_type = self.visit(cond_expr)
-            if cond_type not in ("int", "bool"):  # sua regra de condição, ajuste se necessário
-                self.error(ctx, f"Condição do for deve ser bool ou int, recebeu {self.type_to_str(cond_type)}")
+        cond_type = self.visit(cond_expr)
+        if cond_type not in ("bool", "int"):
+            self.error(
+                ctx,
+                f"Condição do for deve ser bool ou int, recebeu {self.type_to_str(cond_type)}"
+            )
 
-        # 3) update (forUpdate?)
-        if ctx.forUpdate():
-            self.visit(ctx.forUpdate())
+        # 3) update — obrigatório
+        self.visit(ctx.forUpdate())
 
-        # 4) bloco interno
+        # 4) bloco
         self.visit(ctx.block())
 
         self.stmgr.pop_scope()

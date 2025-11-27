@@ -70,10 +70,7 @@ assignStmt
     : leftHandSide EQ expr SEMI
     ;
 
-leftHandSide
-    : ID
-    | ID DOT ID
-    ;
+leftHandSide : ID ('.' ID)* ;
 
 callStmt
     : printStmt

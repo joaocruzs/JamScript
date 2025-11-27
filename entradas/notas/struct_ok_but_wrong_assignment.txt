@@ -1,0 +1,2 @@
+// Erro Semantico: atribuicao proibida de struct
+program Test; struct P{let x:int;} ; main { let a:P; let b:P; a=b; }

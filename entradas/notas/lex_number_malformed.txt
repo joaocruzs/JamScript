@@ -1,0 +1,2 @@
+// Erro Lexico: número malformado
+program Test; let x : float = 12.;

@@ -1,0 +1,2 @@
+// Erro Semantico: variavel nao declarada
+program Test; main { x = 10; }

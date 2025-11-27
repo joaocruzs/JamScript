@@ -1,0 +1,2 @@
+// Erro Semantico: redeclaracao
+program Test; main { let x:int; let x:int; }

@@ -36,4 +36,7 @@ Para percorrer todos os exemplos basta:
 python tests.py --all
 ```
 
-pode substituir `-all` por `--erros` caso desejar apenas erros e `--acertos` se desejar apenas os certos.
+pode substituir `-all` por:
+1. `--notas` caso desejar erros nomeados pelo tipo de erro esperado
+2. `--erros` caso desejar apenas erros
+3. `--acertos` se desejar apenas certos
