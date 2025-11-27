@@ -1,23 +1,22 @@
-# main_debug_fixed.py
+
 import sys
 from antlr4 import *
 from antlr4.error.ErrorListener import ErrorListener
 
 from antlr.JamScriptLexer import JamScriptLexer
 from antlr.JamScriptParser import JamScriptParser
-from semantica.semantic import SemanticAnalyzer, SemanticError  # ajuste se o nome for outro
+from semantica.semantic import SemanticAnalyzer, SemanticError
 
-
+# ----- LISTENER DE ERROS LÉXICOS -----
 class LexErrorListener(ErrorListener):
     def __init__(self):
         super().__init__()
         self.errors = []
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        # msg é fornecido pelo runtime do lexer/parser; formate como precisar
         self.errors.append(f"LÉXICO [{line}:{column}] {msg}")
 
-
+# ----- LISTENER DE ERROS SINTÁTICOS -----
 class ParseErrorListener(ErrorListener):
     def __init__(self):
         super().__init__()
