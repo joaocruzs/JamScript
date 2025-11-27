@@ -59,6 +59,7 @@ stmt
 
 simpleStmt
     : assignStmt
+    | incExpr ';' 
     | callStmt SEMI
     | returnStmt SEMI
     | varDecl

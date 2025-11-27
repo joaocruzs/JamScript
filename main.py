@@ -1,26 +1,23 @@
-# main_debug.py — versão com prints explicativos
-# Quando for entregar, comente as linhas marcadas com ### DEBUG ###
-
+# main_debug_fixed.py
 import sys
 from antlr4 import *
 from antlr4.error.ErrorListener import ErrorListener
 
 from antlr.JamScriptLexer import JamScriptLexer
 from antlr.JamScriptParser import JamScriptParser
-from semantica.semantic import SemanticAnalyzer
+from semantica.semantic import SemanticAnalyzer, SemanticError  # ajuste se o nome for outro
 
 
-# ----- LISTENER DE ERROS LÉXICOS -----
 class LexErrorListener(ErrorListener):
     def __init__(self):
         super().__init__()
         self.errors = []
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        # msg é fornecido pelo runtime do lexer/parser; formate como precisar
         self.errors.append(f"LÉXICO [{line}:{column}] {msg}")
 
 
-# ----- LISTENER DE ERROS SINTÁTICOS -----
 class ParseErrorListener(ErrorListener):
     def __init__(self):
         super().__init__()
@@ -36,13 +33,12 @@ def main():
         return
 
     input_file = sys.argv[1]
-
-    # Carregar arquivo
+    
     try:
         with open(input_file, "r", encoding="utf-8") as f:
             data = f.read()
-        print("### DEBUG: arquivo carregado ###")
-    except Exception:
+    except Exception as e:
+        print("[ERRO] Falha ao ler arquivo:", e)
         print("erro")
         return
 
@@ -50,15 +46,16 @@ def main():
     input_stream = InputStream(data)
     lexer = JamScriptLexer(input_stream)
 
+    # anexa listener ao lexer para capturar erros léxicos
     lex_listener = LexErrorListener()
     lexer.removeErrorListeners()
     lexer.addErrorListener(lex_listener)
 
+    # constrói token stream (isso força o lexer a produzir tokens e acionar listeners)
     token_stream = CommonTokenStream(lexer)
-
-    # força o lexer a gerar todos tokens
     token_stream.fill()
 
+    # se o listener coletou erros, tratamos como erro léxico
     if lex_listener.errors:
         print("### DEBUG: erro léxico detectado ###")
         for e in lex_listener.errors:
@@ -66,11 +63,8 @@ def main():
         print("erro")
         return
 
-    print("### DEBUG: análise léxica OK ###")
-
     # ===== 2. SINTÁTICO =====
     parser = JamScriptParser(token_stream)
-
     parse_listener = ParseErrorListener()
     parser.removeErrorListeners()
     parser.addErrorListener(parse_listener)
@@ -84,14 +78,17 @@ def main():
         print("erro")
         return
 
-    print("### DEBUG: análise sintática OK ###")
-
     # ===== 3. SEMÂNTICO =====
     try:
         analyzer = SemanticAnalyzer()
         analyzer.visit(tree)
-        print("### DEBUG: análise semântica OK ###")
+    except SemanticError as se:
+        print("### DEBUG: erro semântico detectado ###")
+        print(" -", se)
+        print("erro")
+        return
     except Exception as e:
+        # captura falhas inesperadas no semântico
         print("### DEBUG: erro semântico detectado ###")
         print(" -", e)
         print("erro")

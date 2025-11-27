@@ -29,27 +29,27 @@ def run_tests(path):
 
 def main():
     if len(sys.argv) < 2:
-        print("Uso: python test_runner.py [--erros | --certos | --all]")
+        print("Uso: python test_runner.py [--erros | --acertos | --all]")
         return
 
     cmd = sys.argv[1]
 
     base = "entradas"
     erros_path = os.path.join(base, "erros")
-    certos_path = os.path.join(base, "certos")
+    acertos_path = os.path.join(base, "acertos")
 
     if cmd == "--erros":
         run_tests(erros_path)
 
-    elif cmd == "--certos":
-        run_tests(certos_path)
+    elif cmd == "--acertos":
+        run_tests(acertos_path)
 
     elif cmd == "--all":
         run_tests(erros_path)
-        run_tests(certos_path)
+        run_tests(acertos_path)
 
     else:
-        print("Opção inválida. Use: --erros | --certos | --all")
+        print("Opção inválida. Use: --erros | --acertos | --all")
 
 if __name__ == "__main__":
     main()

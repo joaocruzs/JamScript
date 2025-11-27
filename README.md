@@ -27,7 +27,7 @@ antlr4 -Dlanguage=Python3 -visitor JamScript.g4
 5. 
 
 ```bash
-python main.py entradas/e1.txt
+python main.py entradas/erros/e1.txt
 ```
 
 ## Front-end
@@ -36,4 +36,4 @@ Para percorrer todos os exemplos basta:
 python tests.py --all
 ```
 
-pode substituir `-all` por `--erros` caso desejar apenas erros e `--ok` se desejar apenas os certos.
+pode substituir `-all` por `--erros` caso desejar apenas erros e `--acertos` se desejar apenas os certos.
