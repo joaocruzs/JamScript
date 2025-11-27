@@ -1,5 +1,0 @@
-// Erro léxico: identificador inválido
-program Test;
-main {
-    let 2abc:int = 5;
-}

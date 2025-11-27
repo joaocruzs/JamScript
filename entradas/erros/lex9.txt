@@ -1,0 +1,5 @@
+// ERRO LÉXICO: float inválido "10."
+program Test;
+main {
+    let x:float = 10.;
+}

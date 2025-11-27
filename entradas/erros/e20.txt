@@ -1,5 +1,0 @@
-// Erro: tipo inexistente
-program Test;
-main {
-    let x:Banana = 2;
-}

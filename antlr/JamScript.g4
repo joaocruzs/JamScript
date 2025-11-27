@@ -1,9 +1,6 @@
-/*
-TRABALHO FINAL COMPILADORES 2025.2
-Ana Valéria Silva Coelho
-João Vitor Cruz Silva
-Miguel Anjo Maciel Medeiros
- */
+// JamScript.g4
+// TRABALHO FINAL COMPILADORES 2025.2
+// Autores: Ana Valéria Silva Coelho, João Vitor Cruz Silva, Miguel Anjo Maciel Medeiros
 
 grammar JamScript;
 
@@ -12,52 +9,44 @@ grammar JamScript;
 // ======================
 
 program
-    : 'program' ID ';' structDecl* funcDecl* mainBlock EOF
+    : PROGRAM ID SEMI structDecl* funcDecl* mainBlock EOF
     ;
 
-//1. Tipos básicos e derivados: declarações
 decl
     : varDecl
     ;
 
 structDecl
-    // struct NÃO termina com ';' (corrigido)
-    : 'struct' ID '{' structField* '}'
+    : STRUCT ID LBRACE structField* RBRACE
     ;
 
 structField
-    : ('let') ID ':' type_ ';'
+    : LET ID COLON type_ SEMI
     ;
 
-// 3.1 Sintaxe geral: variáveis e constantes
 varDecl
-    // múltiplas variáveis NÃO são permitidas → removido (',' ID)*
-    : 'let' ID ':' type_ ('=' expr)? ';'
-    | 'const' ID ':' type_ '=' expr ';'
+    : LET ID COLON type_ (EQ expr)? SEMI
+    | CONST ID COLON type_ EQ expr SEMI
     ;
 
-// 4. Declaração de funções
 funcDecl
-    : FUNCTION ID '(' paramList? ')' ':' type_ block
+    : FUNCTION ID LPAREN paramList? RPAREN COLON type_ block
     ;
 
 paramList
-    : param (',' param)*
+    : param (COMMA param)*
     ;
 
 param
-    : ID ':' type_
+    : ID COLON type_
     ;
 
-// ---------------------------------------------
-// Bloco principal
 mainBlock
-    : 'main' block
+    : MAIN block
     ;
 
 block
-    // Permite decls e stmts, verificação semântica impede decls após stmts
-    : '{' decl* stmt* '}'
+    : LBRACE decl* stmt* RBRACE
     ;
 
 stmt
@@ -70,22 +59,21 @@ stmt
 
 simpleStmt
     : assignStmt
-    | callStmt ';'
-    | returnStmt ';'
+    | callStmt SEMI
+    | returnStmt SEMI
     | varDecl
-    | 'break' ';'
+    | BREAK SEMI
     ;
 
 assignStmt
-    : leftHandSide '=' expr ';'
+    : leftHandSide EQ expr SEMI
     ;
 
 leftHandSide
     : ID
-    | ID '.' ID
+    | ID DOT ID
     ;
 
-// 5. Funções nativas
 callStmt
     : printStmt
     | inputStmt
@@ -93,34 +81,32 @@ callStmt
     ;
 
 printStmt
-    : 'print' '(' argList? ')'
+    : PRINT LPAREN argList? RPAREN
     ;
 
 inputStmt
-    : 'input' '(' idList? ')'
+    : INPUT LPAREN idList? RPAREN
     ;
 
 idList
-    : ID (',' ID)*
+    : ID (COMMA ID)*
     ;
 
-// 6. Estruturas de controle
 ifStmt
-    : 'if' '(' expr ')' block ('else' block)?
+    : IF LPAREN expr RPAREN block (ELSE block)?
     ;
 
 whileStmt
-    : 'while' '(' expr ')' block
+    : WHILE LPAREN expr RPAREN block
     ;
 
 forStmt
-    : 'for' '(' forInit? ';' expr? ';' forUpdate? ')' block
+    : FOR LPAREN forInit SEMI expr SEMI forUpdate RPAREN block
     ;
 
 forInit
-    // declaração sem ';'
-    : 'let' ID ':' type_ ('=' expr)?
-    | 'const' ID ':' type_ '=' expr
+    : LET ID COLON type_ (EQ expr)?
+    | CONST ID COLON type_ EQ expr
     | assignNoSemi
     ;
 
@@ -130,60 +116,55 @@ forUpdate
     ;
 
 assignNoSemi
-    : leftHandSide '=' expr
+    : leftHandSide EQ expr
     ;
 
 incExpr
-    : ID '++'
-    | ID '--'
-    | '++' ID
-    | '--' ID
+    : ID INC
+    | ID DEC
+    | INC ID
+    | DEC ID
     ;
 
 returnStmt
-    : 'return' expr?
+    : RETURN expr?
     ;
 
-// 2. Operadores
-//2.5 Precedência de operadores em expressões (SEM left recursion)
 expr
     : orExpr
     ;
 
 orExpr
-    : andExpr ( '||' andExpr )*
+    : andExpr ( OR andExpr )*
     ;
 
 andExpr
-    : eqExpr ( '&&' eqExpr )*
+    : eqExpr ( AND eqExpr )*
     ;
 
 eqExpr
-    : relExpr ( ('==' | '!=') relExpr )*
+    : relExpr ( (EQEQ | NEQ) relExpr )*
     ;
 
 relExpr
-    // Apenas > e < — >= e <= foram removidos conforme PDF
-    : addExpr ( ('>' | '<') addExpr )*
+    : addExpr ( (GT | LT) addExpr )*
     ;
 
 addExpr
-    : mulExpr ( ('+' | '-') mulExpr )*
+    : mulExpr ( (PLUS | MINUS) mulExpr )*
     ;
 
 mulExpr
-    : unaryExpr ( ('*' | '/') unaryExpr )*
+    : unaryExpr ( (STAR | SLASH) unaryExpr )*
     ;
 
 unaryExpr
-    // operadores unários e pré-incremento
-    : ('!' | '-' | '++' | '--') unaryExpr
+    : (NOT | MINUS | INC | DEC) unaryExpr
     | postfixExpr
     ;
 
 postfixExpr
-    // pós-incremento/decremento
-    : primary ('++' | '--')?
+    : primary (INC | DEC)?
     ;
 
 primary
@@ -193,32 +174,32 @@ primary
     | BOOL
     | leftHandSide
     | functionCall
-    | '(' expr ')'
+    | LPAREN expr RPAREN
     ;
 
 functionCall
-    : ID '(' argList? ')'
+    : ID LPAREN argList? RPAREN
     ;
 
 argList
-    : expr (',' expr)*
+    : expr (COMMA expr)*
     ;
 
 // ======================
 // REGRAS DO LEXER
 // ======================
 
+// Tipos (note que 'void' foi adicionado para retorno de função)
 type_
     : 'int'
     | 'float'
     | 'bool'
     | 'string'
-    | ID             
+    | 'void'
+    | ID
     ;
 
-
-
-// 2. Operadores e pontuação
+// Operadores e pontuação
 PLUS        : '+' ;
 MINUS       : '-' ;
 STAR        : '*' ;
@@ -241,6 +222,8 @@ SEMI        : ';' ;
 COLON       : ':' ;
 COMMA       : ',' ;
 DOT         : '.' ;
+
+// Palavras-reservadas (keywords) — devem aparecer antes de ID
 PROGRAM     : 'program' ;
 FUNCTION    : 'function' ;
 LET         : 'let' ;
@@ -254,15 +237,27 @@ FOR         : 'for' ;
 RETURN      : 'return' ;
 PRINT       : 'print' ;
 INPUT       : 'input' ;
+BREAK       : 'break' ;
 
-// 3. Comentários e Whitespace
+// Comentários e espaços
 WS              : [ \t\r\n]+ -> skip ;
 LINE_COMMENT    : '//' ~[\r\n]* -> skip ;
 BLOCK_COMMENT   : '/*' .*? '*/' -> skip ;
 
-// 1. Literais e tokens
+// Literais
 BOOL        : 'true' | 'false' ;
 ID          : [a-zA-Z_][a-zA-Z0-9_]* ;
 FLOAT       : [0-9]+ '.' [0-9]+ ;
 NUMBER      : [0-9]+ ;
-STRING      : '"' (~["\r\n])* '"' ;
+STRING
+    : '"' ( ESC | ~["\\\r\n] )* '"'
+    ;
+
+fragment ESC
+    : '\\' [btnfr"'\\/]     // escapes válidos
+    ;
+
+// String não fechada
+UNCLOSED_STRING
+    : '"' ( ESC | ~["\\\r\n] )* EOF
+    ;

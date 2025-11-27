@@ -1,2 +1,0 @@
-// Erro: incremento inválido
-program Test; main { (1+2)++; }

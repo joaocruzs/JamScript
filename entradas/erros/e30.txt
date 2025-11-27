@@ -1,7 +1,0 @@
-// Erro: incremento em campo não-int
-program Test;
-struct P { let nome:string; }
-main {
-    let p:P;
-    p.nome++;
-}

@@ -1,0 +1,4 @@
+// ERRO SINTÁTICO
+program Test;
+function f() { return 1; }
+main { }

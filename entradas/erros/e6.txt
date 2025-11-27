@@ -1,2 +1,0 @@
-// OK
-program T1; main { let x:int=2; print(x); }

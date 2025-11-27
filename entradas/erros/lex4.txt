@@ -1,0 +1,5 @@
+// ERRO LÉXICO: identificador inválido "1abc"
+program Test;
+main {
+    let 1abc:int = 10;
+}

@@ -1,2 +1,0 @@
-// Erro: variável não declarada
-program Test; main { x = 10; }

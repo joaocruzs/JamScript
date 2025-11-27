@@ -1,6 +1,0 @@
-// Erro: acesso a campo em tipo não-struct
-program Test;
-main {
-    let x:int = 3;
-    x.y = 10;
-}

@@ -1,0 +1,5 @@
+// ERRO SINTÁTICO
+program Test;
+main {
+    for (let i:int = 0; ; i++) { }
+}

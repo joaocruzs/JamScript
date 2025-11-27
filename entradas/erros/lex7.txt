@@ -1,0 +1,4 @@
+// ERRO LÉXICO: /* sem fechamento
+program Test;
+/* comentário não fechado
+main { }

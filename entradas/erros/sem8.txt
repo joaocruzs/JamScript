@@ -1,0 +1,5 @@
+// ERRO SEMÂNTICO: comparar string com int
+program Test;
+main {
+    if ("a" > 10) { }
+}

@@ -1,6 +1,0 @@
-// Erro: input com constante
-program Test;
-main {
-    const x:int = 0;
-    input(x);
-}

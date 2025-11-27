@@ -1,0 +1,5 @@
+// ERRO SEMÂNTICO: string + int inválido
+program Test;
+main {
+    let s:string = "abc" + 10;
+}
