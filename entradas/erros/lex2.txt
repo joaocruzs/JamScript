@@ -1,0 +1,5 @@
+// ERRO LÉXICO: string não fechada
+program Test;
+main {
+    let s:string = "texto sem fim;
+}

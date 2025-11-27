@@ -1,0 +1,4 @@
+// ERRO SEMÂNTICO: função deveria retornar int
+program Test;
+function f():int { }
+main {}

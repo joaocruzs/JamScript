@@ -1,0 +1,5 @@
+// ERRO SINTÁTICO: '}' extra
+program Test;
+main {
+    let x:int = 2;
+}}}

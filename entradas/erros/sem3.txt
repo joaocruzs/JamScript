@@ -1,0 +1,5 @@
+// ERRO SEMÂNTICO: atribuição int ← string
+program Test;
+main {
+    let x:int = "abc";
+}

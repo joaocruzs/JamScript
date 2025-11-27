@@ -1,0 +1,5 @@
+// ERRO LÉXICO: caractere '~'
+program Test;
+main {
+    let x:int = ~10;
+}

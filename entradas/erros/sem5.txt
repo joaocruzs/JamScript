@@ -1,0 +1,6 @@
+// ERRO SEMÂNTICO: f(int) chamada com string
+program Test;
+function f(a:int):int { return a; }
+main {
+    f("abc");
+}

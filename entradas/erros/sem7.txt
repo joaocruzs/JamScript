@@ -1,0 +1,7 @@
+// ERRO SEMÂNTICO: struct Coord não tem campo z
+program Test;
+struct Coord { let x:int; let y:int; }
+main {
+    let p:Coord;
+    p.z = 10;
+}

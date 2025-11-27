@@ -1,0 +1,5 @@
+// ERRO LÉXICO: caractere inválido "§"
+program Test;
+main {
+    let x:int = 5 § 2;
+}

@@ -1,0 +1,6 @@
+// ERRO SEMÂNTICO: const não pode receber novo valor
+program Test;
+main {
+    const x:int = 3;
+    x = 5;
+}

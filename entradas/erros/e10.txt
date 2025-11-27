@@ -1,6 +1,0 @@
-// Erro léxico: comentário de bloco aberto e não fechado
-program Test;
-/*
-main {
-    let x:int = 10;
-}

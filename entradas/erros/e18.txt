@@ -1,7 +1,0 @@
-// Erro: comparação inválida (ex: string > int)
-program Test;
-main {
-    let s:string = "abc";
-    let x:int = 2;
-    if (s > x) { }
-}

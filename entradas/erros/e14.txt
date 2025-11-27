@@ -1,6 +1,0 @@
-// Erro: função void retornando valor
-program Test;
-function f():void {
-    return 5;
-}
-main { }

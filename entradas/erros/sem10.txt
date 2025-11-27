@@ -1,0 +1,4 @@
+// ERRO SEMÂNTICO
+program Test;
+function f():bool { return 3; }
+main {}

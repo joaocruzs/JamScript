@@ -1,0 +1,5 @@
+// ERRO SEMÂNTICO: uso de x antes de declarar
+program Test;
+main {
+    x = 10;
+}

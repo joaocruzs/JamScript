@@ -1,0 +1,5 @@
+// ERRO LÉXICO: escape inválido "\q"
+program Test;
+main {
+    let s:string = "erro \q aqui";
+}

@@ -1,0 +1,6 @@
+// ERRO SEMÂNTICO: variável duplicada
+program Test;
+main {
+    let x:int = 1;
+    let x:int = 2;
+}

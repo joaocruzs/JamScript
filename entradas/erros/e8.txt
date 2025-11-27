@@ -1,5 +1,0 @@
-// Erro léxico: número malformado (float com dois pontos)
-program Test;
-main {
-    let x:float = 12..3;
-}

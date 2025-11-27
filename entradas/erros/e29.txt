@@ -1,6 +1,0 @@
-// Erro: incremento em constante
-program Test;
-main {
-    const x:int = 2;
-    x++;
-}

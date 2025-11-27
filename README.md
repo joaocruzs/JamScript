@@ -19,7 +19,7 @@ Trabalho Final da disciplina de Compiladores, 2025.2
 2. Geramos Lexer, parser e Listener com o comando:
 
 ```bash
-antlr4 -Dlanguage=Python3 JamScript.g4
+antlr4 -Dlanguage=Python3 -visitor JamScript.g4
 ```
 
 3. Criamos arquivo `Semantica.py` , para usarmos `JamScriptLexer` e `JamScriptParser`;

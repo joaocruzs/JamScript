@@ -1,0 +1,6 @@
+// ERRO SINTÁTICO
+program Test;
+function f():int { return 1; }
+main {
+    f; // errado
+}

@@ -1,0 +1,5 @@
+// ERRO SINTÁTICO
+program Test;
+main {
+    let x = 10; // falta o tipo
+}
