@@ -430,59 +430,87 @@ class SemanticAnalyzer(JamScriptVisitor):
         self.visit(ctx.block())
         return None
 
-    def visitForStmt(self, ctx:JamScriptParser.ForStmtContext):
-        # forStmt: FOR LPAREN forInit? SEMI expr SEMI forUpdate? RPAREN block
-        # forInit is optional, forUpdate optional, condition mandatory per grammar we decided
+    def visitForInit(self, ctx: JamScriptParser.ForInitContext):
+
+        # 1) Caso seja assignNoSemi: leftHandSide = expr
+        if ctx.assignNoSemi():
+            return self.visit(ctx.assignNoSemi())
+
+        # 2) Caso seja LET ou CONST
+        if ctx.LET() or ctx.CONST():
+            is_const = ctx.CONST() is not None
+
+            # Agora de forma correta: ctx.ID() é UM TerminalNodeImpl
+            id_node = ctx.ID()
+            if id_node is None:
+                self.error(ctx, "Inicialização do for sem identificador.")
+                return None
+
+            name = id_node.getText()
+
+            # Tipo declarado
+            type_node = ctx.type_()
+            if type_node is None:
+                self.error(ctx, f"Tipo não informado na inicialização do for para '{name}'.")
+                return None
+
+            type_name = type_node.getText()
+            declared_type = self.resolve_type_name(type_name)
+            if declared_type is None:
+                self.error(ctx, f"Tipo '{type_name}' não declarado.")
+                declared_type = type_name
+
+            # Registrar variável no escopo atual
+            try:
+                self.stmgr.define(VarSymbol(name, declared_type, is_const=is_const))
+            except Exception as e:
+                self.error(ctx, str(e))
+
+            # Verificar inicialização com '=' caso exista expr
+            if ctx.expr():
+                val_type = self.visit(ctx.expr())
+                if not self.can_assign(declared_type, val_type):
+                    self.error(
+                        ctx,
+                        f"Tipo incompatível na inicialização do for: "
+                        f"{self.type_to_str(declared_type)} <- {self.type_to_str(val_type)}"
+                    )
+
+        return None
+
+
+    def visitForStmt(self, ctx: JamScriptParser.ForStmtContext):
+        # escopo do for
+        self.stmgr.push_scope("for")
+
+        # 1) inicialização
         if ctx.forInit():
             self.visit(ctx.forInit())
-        # condition must exist and be boolean
-        cond_ctx = ctx.expr()
-        if cond_ctx is None:
-            self.error(ctx, "Condição do for não pode ser vazia.")
-        else:
-            cond_type = self.visit(cond_ctx)
-            if cond_type != 'bool':
-                self.error(cond_ctx, f"Expressão de condição do for deve ser bool, encontrado {self.type_to_str(cond_type)}")
+
+        # 2) condição (expr?) — apenas UM expr
+        cond_expr = ctx.expr()
+        if cond_expr is not None:
+            cond_type = self.visit(cond_expr)
+            if cond_type not in ("int", "bool"):  # sua regra de condição, ajuste se necessário
+                self.error(ctx, f"Condição do for deve ser bool ou int, recebeu {self.type_to_str(cond_type)}")
+
+        # 3) update (forUpdate?)
         if ctx.forUpdate():
             self.visit(ctx.forUpdate())
-        # visit block
+
+        # 4) bloco interno
         self.visit(ctx.block())
+
+        self.stmgr.pop_scope()
         return None
 
-    def visitForInit(self, ctx:JamScriptParser.ForInitContext):
-        # can be let/const declaration or assignNoSemi
-        if ctx.varDecl():
-            return self.visit(ctx.varDecl())
-        if ctx.assignNoSemi():
-            # assignNoSemi: leftHandSide EQ expr
-            # emulate assign but without semicolon
-            lhs_type, lhs_sym, _ = self._resolve_lhs(ctx.assignNoSemi().leftHandSide())
-            if lhs_sym is None:
-                self.error(ctx, f"Atribuição em inicialização do for para variável não declarada: {ctx.getText()}")
-            else:
-                if getattr(lhs_sym, 'is_const', False):
-                    self.error(ctx, "Atribuição a constante na inicialização do for.")
-                val_type = self.visit(ctx.assignNoSemi().expr())
-                if not self.can_assign(lhs_type, val_type):
-                    self.error(ctx, "Incompatibilidade de tipos na atribuição do for.")
-        return None
-
-    def visitForUpdate(self, ctx:JamScriptParser.ForUpdateContext):
-        # incExpr or assignNoSemi
+    def visitForUpdate(self, ctx: JamScriptParser.ForUpdateContext):
         if ctx.incExpr():
             return self.visit(ctx.incExpr())
         if ctx.assignNoSemi():
-            # reuse same checks as assignNoSemi
-            lhs_type, lhs_sym, _ = self._resolve_lhs(ctx.assignNoSemi().leftHandSide())
-            if lhs_sym is None:
-                self.error(ctx, "Atribuição no update do for para variável não declarada.")
-            else:
-                if getattr(lhs_sym, 'is_const', False):
-                    self.error(ctx, "Atribuição a constante no update do for.")
-                val_type = self.visit(ctx.assignNoSemi().expr())
-                if not self.can_assign(lhs_type, val_type):
-                    self.error(ctx, "Incompatibilidade de tipos no update do for.")
+            return self.visit(ctx.assignNoSemi())
         return None
+
 
     def visitAssignNoSemi(self, ctx:JamScriptParser.AssignNoSemiContext):
         # used by forInit/forUpdate; leftHandSide EQ expr
@@ -498,26 +526,25 @@ class SemanticAnalyzer(JamScriptVisitor):
             self.error(ctx, "Incompatibilidade de tipos na atribuição.")
         return None
 
-    def visitIncExpr(self, ctx:JamScriptParser.IncExprContext):
-        # incExpr: ID INC | ID DEC | INC ID | DEC ID
-        # find identifier
-        ids = ctx.ID()
-        if len(ids) == 1:
-            name = ids[0].getText()
-        else:
-            # if INC ID case, ID still present
-            name = ids[0].getText()
-        sym = self.stmgr.resolve(name)
-        if sym is None:
-            self.error(ctx, f"Identificador '{name}' não declarado para incremento.")
-            return None
-        if getattr(sym, 'is_const', False):
-            self.error(ctx, f"Incremento/decremento em constante '{name}' não permitido.")
-            return None
-        # must be int
-        if sym.type != 'int':
-            self.error(ctx, f"Incremento/decremento aplicável somente a 'int', encontrado {self.type_to_str(sym.type)} para '{name}'.")
-        return 'int'
+    def visitIncExpr(self, ctx: JamScriptParser.IncExprContext):
+        # ctx.ID() pode ser None ou 1 TerminalNodeImpl
+        id_node = ctx.ID()
+        if id_node:
+            name = id_node.getText()
+            symbol = self.stmgr.resolve(name)
+            if symbol is None:
+                self.error(ctx, f"Variável '{name}' não declarada no incremento.")
+                return None
+
+            # Tipo deve ser int
+            if symbol.type != "int":
+                self.error(ctx, f"Operador ++/-- só permitido para int, recebeu {self.type_to_str(symbol.type)}")
+
+            return "int"
+
+        # Caso prefixo ++ID ou --ID
+        # ainda assim há ctx.ID() → um único TerminalNode
+        return "int"
 
     def visitReturnStmt(self, ctx:JamScriptParser.ReturnStmtContext):
         # return expr?
