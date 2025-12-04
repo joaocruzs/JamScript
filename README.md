@@ -1,5 +1,8 @@
-# JamScript
-Trabalho Final da disciplina de Compiladores, 2025.2
+# JamScript Compiler
+
+Trabalho Final da disciplina de Compiladores, 2025.2 - UFPI.
+
+Este projeto consiste em um compilador para a linguagem **JamScript**, capaz de realizar análise léxica, sintática, semântica e geração de código nativo via LLVM.
 
 ## Equipe
 
@@ -7,36 +10,52 @@ Trabalho Final da disciplina de Compiladores, 2025.2
 - [João Victor Cruz](https://github.com/joaocruzs)
 - [Miguel Anjo](https://github.com/Anjinho01)
 
-### Arquivos
+## Estrutura do Projeto
 
-* `JamScript.g4` — gramática ANTLR.
-* `Semantica.py` — código que usa os arquivos gerados pelo ANTLR.
-* `Main.py` — código que usa `Semantica.py`
-* `e1.txt` — arquivo de entrada. (os exemplos de entrada estão contidos na pasta entradas).
+* `antlr/` — Arquivos da gramática (`.g4`) e gerados pelo ANTLR (Lexer, Parser, Visitor).
+* `semantica/` — Analisador semântico e tabela de símbolos.
+* `backend/` — Gerador de código LLVM IR.
+* `main.py` — Ponto de entrada principal do compilador.
+* `tests.py` — Script de testes automatizados.
+* `entradas/` — Exemplos de código fonte para teste.
 
-### Passos
-1. Criamos a gramática `JamScript.g4`;
-2. Geramos Lexer, parser e Listener com o comando:
+## Requisitos
+
+* **Python 3.8+**
+* **Bibliotecas Python:**
+  * `antlr4-python3-runtime`
+  * `llvmlite`
+* **LLVM / Clang** (Instalado e adicionado ao PATH do sistema para compilação do executável).
+
+> **Observação:** Recomenda-se executar os comandos via terminal externo (fora de IDEs). No VS Code, por exemplo, pode ser necessário realizar o download e configuração do Build Tools for Visual Studio para o correto funcionamento, o que dificulta o uso.
+
+## Como Usar
+
+Certifique-se de estar no diretório raiz do projeto (`JamScript/`) antes de executar os comandos.
+
+### 1. Compilação (Source to Executable)
+
+Para compilar um arquivo fonte JamScript e gerar um executável:
 
 ```bash
-antlr4 -Dlanguage=Python3 -visitor JamScript.g4
+python main.py entradas/acertos/e33.txt
 ```
 
-3. Criamos arquivo `Semantica.py` , para usarmos `JamScriptLexer` e `JamScriptParser`;
-4. Criamos arquivo `Main.py`, para usarmos semantic;
-5. 
+O compilador realizará os seguintes passos:
+1. Análise Léxica, Sintática e Semântica.
+2. Geração de código intermediário LLVM IR em `llvm/`.
+3. Compilação para código objeto em `objeto/`.
+4. Linkagem para executável final em `executaveis/`.
 
-```bash
-python main.py entradas/erros/e1.txt
-```
+### 2. Executando Testes
 
-## Front-end
-Para percorrer todos os exemplos basta:
+Para rodar a bateria de testes automatizados (verificação de erros léxicos, sintáticos e semânticos):
+
 ```bash
 python tests.py --all
 ```
 
-pode substituir `-all` por:
-1. `--notas` caso desejar erros nomeados pelo tipo de erro esperado
-2. `--erros` caso desejar apenas erros
-3. `--acertos` se desejar apenas certos
+Opções de filtro para os testes:
+* `--notas`: Testes de casos específicos documentados.
+* `--erros`: Apenas casos de erro.
+* `--acertos`: Apenas casos de sucesso.

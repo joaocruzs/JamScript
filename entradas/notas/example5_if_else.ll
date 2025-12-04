@@ -8,7 +8,6 @@ define i32 @"main"()
 {
 entry:
   %"x" = alloca i32
-body:
   store i32 5, i32* %"x"
   %".3" = load i32, i32* %"x"
   %".4" = icmp sgt i32 %".3", 3

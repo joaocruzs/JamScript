@@ -2,9 +2,22 @@ import os
 import subprocess
 import sys
 
+# Detecta o interpretador Python do ambiente virtual
+def get_python_executable():
+    if sys.platform == "win32":
+        venv_python = os.path.join(".venv", "Scripts", "python.exe")
+    else:
+        venv_python = os.path.join(".venv", "bin", "python")
+    
+    if os.path.exists(venv_python):
+        return venv_python
+    return "python"  # fallback para python do sistema
+
 def run_tests(path):
     files = sorted(os.listdir(path))
     print(f"\n[TESTANDO ARQUIVOS EM: {path}]")
+    
+    python_exe = get_python_executable()
 
     for f in files:
         if not f.endswith(".txt"):
@@ -13,9 +26,9 @@ def run_tests(path):
         full = os.path.join(path, f)
         print(f"\n--- Executando {f} ---")
         
-        # roda: python main.py <arquivo>
+        # roda: python main.py <arquivo> (usando venv)
         result = subprocess.run(
-            ["python", "main.py", full],
+            [python_exe, "main.py", full],
             capture_output=True,
             text=True
         )

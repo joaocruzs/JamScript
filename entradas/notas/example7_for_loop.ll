@@ -8,7 +8,6 @@ define i32 @"main"()
 {
 entry:
   %"i" = alloca i32
-body:
   store i32 0, i32* %"i"
   br label %"for.cond"
 for.cond:

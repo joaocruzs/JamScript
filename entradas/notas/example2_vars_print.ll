@@ -9,7 +9,6 @@ define i32 @"main"()
 entry:
   %"y" = alloca i32
   %"x" = alloca i32
-body:
   store i32 10, i32* %"x"
   %".3" = load i32, i32* %"x"
   %".4" = add i32 %".3", 5

@@ -8,7 +8,6 @@ define i32 @"main"()
 {
 entry:
   %"p" = alloca %"Pessoa"
-body:
   %".2" = getelementptr %"Pessoa", %"Pessoa"* %"p", i32 0, i32 0
   %".3" = bitcast [4 x i8]* @".str.0" to i8*
   store i8* %".3", i8** %".2"

@@ -8,7 +8,6 @@ define i32 @"main"()
 {
 entry:
   %"b" = alloca %"B"
-body:
   %".2" = getelementptr %"B", %"B"* %"b", i32 0, i32 0
   %".3" = getelementptr %"A", %"A"* %".2", i32 0, i32 0
   %".4" = load i32, i32* %".3"

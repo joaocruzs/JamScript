@@ -12,7 +12,6 @@ entry:
   %"x" = alloca i32
   %"b.1" = alloca %"Coord"*
   %"a.1" = alloca %"Coord"*
-body:
   store %"Coord"* %"a", %"Coord"** %"a.1"
   store %"Coord"* %"b", %"Coord"** %"b.1"
   store i32 0, i32* %"x"
@@ -39,7 +38,8 @@ body:
   %".27" = getelementptr %"Coord", %"Coord"* %"r", i32 0, i32 1
   %".28" = load i32, i32* %"y"
   store i32 %".28", i32* %".27"
-  ret %"Coord"* %"r"
+  %".30" = load %"Coord", %"Coord"* %"r"
+  ret %"Coord" %".30"
 }
 
 define i32 @"main"()
@@ -48,7 +48,6 @@ entry:
   %"z" = alloca %"Coord"
   %"n" = alloca %"Coord"
   %"m" = alloca %"Coord"
-body:
   %".2" = getelementptr %"Coord", %"Coord"* %"m", i32 0, i32 0
   store i32 2, i32* %".2"
   %".4" = getelementptr %"Coord", %"Coord"* %"m", i32 0, i32 1

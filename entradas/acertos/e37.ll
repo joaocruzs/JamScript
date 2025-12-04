@@ -8,6 +8,5 @@ define i32 @"main"()
 {
 entry:
   %"a" = alloca %"P"
-body:
   ret i32 0
 }
