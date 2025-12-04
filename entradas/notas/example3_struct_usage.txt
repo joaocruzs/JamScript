@@ -1,0 +1,13 @@
+program Test3;
+
+struct Pessoa {
+    let nome: string;
+    let idade: int;
+}
+
+main {
+    let p: Pessoa;
+    p.nome = "Ana";
+    p.idade = 20;
+    print(p.nome);
+}

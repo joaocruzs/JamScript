@@ -1,0 +1,9 @@
+program Test8;
+
+function show(x: string): void {
+    print(x);
+}
+
+main {
+    show("Hello!");
+}

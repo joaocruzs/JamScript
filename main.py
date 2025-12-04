@@ -2,10 +2,12 @@
 import sys
 from antlr4 import *
 from antlr4.error.ErrorListener import ErrorListener
+from backend.codegen import LLVMCodeGen
 
 from antlr.JamScriptLexer import JamScriptLexer
 from antlr.JamScriptParser import JamScriptParser
 from semantica.semantic import SemanticAnalyzer, SemanticError
+from backend.codegen import LLVMCodeGen
 
 # ----- LISTENER DE ERROS LÉXICOS -----
 class LexErrorListener(ErrorListener):
@@ -94,6 +96,22 @@ def main():
         return
 
     # ===== FINAL =====
+
+    print("aceito")
+
+    print("### DEBUG: gerando LLVM IR ###")
+
+    # passa o gerenciador de tabelas de símbolos inteiro
+    codegen = LLVMCodeGen(analyzer.stmgr)
+
+    # visita a árvore e gera IR
+    codegen.visit(tree)
+
+    # salva no arquivo .ll correspondente
+    outfile = input_file.replace(".txt", ".ll")
+    codegen.write_ir(outfile)
+
+    print(f"### LLVM gerado em: {outfile} ###")
     print("aceito")
 
 

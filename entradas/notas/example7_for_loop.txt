@@ -1,0 +1,7 @@
+program Test7;
+
+main {
+    for (let i: int = 0; i < 5; i++) {
+        print(i);
+    }
+}
