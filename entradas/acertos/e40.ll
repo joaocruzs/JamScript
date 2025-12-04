@@ -8,7 +8,6 @@ define i32 @"main"()
 {
 entry:
   %"s" = alloca i8*
-body:
   %".2" = bitcast [3 x i8]* @".str.0" to i8*
   store i8* %".2", i8** %"s"
   %".4" = load i8*, i8** %"s"

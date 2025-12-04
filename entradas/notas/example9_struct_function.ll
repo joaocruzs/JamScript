@@ -8,7 +8,6 @@ define double @"magnitude"(%"Vec2"* %"v")
 {
 entry:
   %"v.1" = alloca %"Vec2"*
-body:
   store %"Vec2"* %"v", %"Vec2"** %"v.1"
   %".4" = load %"Vec2"*, %"Vec2"** %"v.1"
   %".5" = getelementptr %"Vec2", %"Vec2"* %".4", i32 0, i32 0
@@ -32,7 +31,6 @@ define i32 @"main"()
 {
 entry:
   %"a" = alloca %"Vec2"
-body:
   %".2" = getelementptr %"Vec2", %"Vec2"* %"a", i32 0, i32 0
   store double 0x4008000000000000, double* %".2"
   %".4" = getelementptr %"Vec2", %"Vec2"* %"a", i32 0, i32 1

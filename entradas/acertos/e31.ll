@@ -8,7 +8,6 @@ define i32 @"soma"(%"P"* %"p")
 {
 entry:
   %"p.1" = alloca %"P"*
-body:
   store %"P"* %"p", %"P"** %"p.1"
   %".4" = load %"P"*, %"P"** %"p.1"
   %".5" = getelementptr %"P", %"P"* %".4", i32 0, i32 0
@@ -25,7 +24,6 @@ define i32 @"main"()
 entry:
   %"resultado" = alloca i32
   %"a" = alloca %"P"
-body:
   %".2" = call i32 @"soma"(%"P"* %"a")
   store i32 %".2", i32* %"resultado"
   %".4" = load i32, i32* %"resultado"

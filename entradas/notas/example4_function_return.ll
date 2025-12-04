@@ -9,7 +9,6 @@ define i32 @"soma"(i32 %"a", i32 %"b")
 entry:
   %"b.1" = alloca i32
   %"a.1" = alloca i32
-body:
   store i32 %"a", i32* %"a.1"
   store i32 %"b", i32* %"b.1"
   %".6" = load i32, i32* %"a.1"
@@ -22,7 +21,6 @@ define i32 @"main"()
 {
 entry:
   %"r" = alloca i32
-body:
   %".2" = call i32 @"soma"(i32 3, i32 4)
   store i32 %".2", i32* %"r"
   %".4" = load i32, i32* %"r"

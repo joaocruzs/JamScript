@@ -31,6 +31,9 @@ class LLVMCodeGen(JamScriptVisitor):
         self.struct_types = {}
         self._str_consts = {}
         
+        # Controle de break/continue em loops
+        self.break_stack = []  # Stack de labels para break
+        
         self._declare_printf()
 
     # ========== Helpers Básicos ==========
@@ -163,12 +166,12 @@ class LLVMCodeGen(JamScriptVisitor):
         if isinstance(func_sym.type, str):
             sym = self.stmgr.resolve(func_sym.type)
             if isinstance(sym, StructSymbol):
-                ret_ty = self._ensure_struct_type(sym)      # struct by value NÃO é permitido!
+                ret_ty = self._ensure_struct_type(sym)  # struct retorna por valor
             else:
                 ret_ty = self._llvm_type_for_name(func_sym.type)
         else:
             # já é StructSymbol
-            ret_ty = self._ensure_struct_type(func_sym.type)
+            ret_ty = self._ensure_struct_type(func_sym.type)  # struct retorna por valor
 
         # Parâmetros
         param_types = []
@@ -217,11 +220,10 @@ class LLVMCodeGen(JamScriptVisitor):
         for i, (pname, _) in enumerate(func_sym.params):
             fn.args[i].name = pname
         
-        # Criar blocos
+        # Criar apenas entry block
         entry_block = fn.append_basic_block("entry")
-        body_block = fn.append_basic_block("body")
         
-        self.builder = ir.IRBuilder(body_block)
+        self.builder = ir.IRBuilder(entry_block)
         self.func = fn
         self._new_scope()
         
@@ -250,9 +252,8 @@ class LLVMCodeGen(JamScriptVisitor):
         main_fn = ir.Function(self.module, ir.FunctionType(self.i32, []), name="main")
         
         entry = main_fn.append_basic_block("entry")
-        body = main_fn.append_basic_block("body")
         
-        self.builder = ir.IRBuilder(body)
+        self.builder = ir.IRBuilder(entry)
         self.func = main_fn
         self._new_scope()
         
@@ -294,14 +295,48 @@ class LLVMCodeGen(JamScriptVisitor):
                 self.builder.store(ir.Constant(self.i32, 0), ptr)
             elif llvm_ty == self.flt:
                 self.builder.store(ir.Constant(self.flt, 0.0), ptr)
+            elif llvm_ty == self.i1:
+                self.builder.store(ir.Constant(self.i1, False), ptr)
+            elif llvm_ty.is_pointer and llvm_ty.pointee == self.str_type:
+                # String vazia padrão
+                empty_str = ir.Constant(ir.ArrayType(self.i8, 1), [ir.Constant(self.i8, 0)])
+                global_str = ir.GlobalVariable(self.module, ir.ArrayType(self.i8, 1), 
+                                             name=f"_empty_str_{self._get_unique_id()}")
+                global_str.initializer = empty_str
+                global_str.global_constant = True
+                empty_ptr = self.builder.gep(global_str, [ir.Constant(self.i32, 0), ir.Constant(self.i32, 0)])
+                self.builder.store(empty_ptr, ptr)
+            elif isinstance(llvm_ty, ir.PointerType) and isinstance(llvm_ty.pointee, ir.LiteralStructType):
+                # Struct: inicializar com zeros
+                zero_init = ir.Constant.literal_struct([ir.Constant(field_type, 0) for field_type in llvm_ty.pointee.elements])
+                self.builder.store(zero_init, ptr)
 
-    # ========== Statements ==========
+    def visitSimpleStmt(self, ctx: JamScriptParser.SimpleStmtContext):
+        """Gera código para statements simples (inc, dec, atribuição, break)."""
+        if ctx.BREAK():
+            if not self.break_stack:
+                raise CodeGenError("break statement fora de um loop")
+            self.builder.branch(self.break_stack[-1])
+            return None
+        else:
+            # Outros statements (inc, dec, assignment)
+            return self.visitChildren(ctx)
     def visitAssignStmt(self, ctx: JamScriptParser.AssignStmtContext):
         ptr, llvm_ty = self._resolve_lhs_ptr(ctx.leftHandSide())
         val, vtype = self.visit(ctx.expr())
         
-        if vtype == 'int' and llvm_ty == self.flt:
-            val = self.builder.sitofp(val, self.flt)
+        # Check if target is float and value is int (needs promotion)
+        if vtype == 'int':
+            if hasattr(llvm_ty, 'is_pointer') and llvm_ty.is_pointer and llvm_ty.pointee == self.flt:
+                val = self.builder.sitofp(val, self.flt)
+            elif llvm_ty == self.flt:
+                val = self.builder.sitofp(val, self.flt)
+        elif vtype == 'struct':
+            # val is struct value, store directly
+            pass
+        elif vtype == 'struct_ptr':
+            # val is struct pointer, load the value
+            val = self.builder.load(val)
         
         self.builder.store(val, ptr)
 
@@ -448,7 +483,9 @@ class LLVMCodeGen(JamScriptVisitor):
         self.builder.cbranch(cond_bool, body_bb, end_bb)
         
         self.builder.position_at_end(body_bb)
+        self.break_stack.append(end_bb)  # Adicionar suporte a break
         self.visit(ctx.block())
+        self.break_stack.pop()
         if not self.builder.block.is_terminated:
             self.builder.branch(cond_bb)
         
@@ -471,7 +508,9 @@ class LLVMCodeGen(JamScriptVisitor):
         self.builder.cbranch(cond_bool, body_bb, end_bb)
         
         self.builder.position_at_end(body_bb)
+        self.break_stack.append(end_bb)  # Adicionar suporte a break
         self.visit(ctx.block())
+        self.break_stack.pop()
         if not self.builder.block.is_terminated:
             self.builder.branch(update_bb)
         
@@ -520,6 +559,13 @@ class LLVMCodeGen(JamScriptVisitor):
     def visitReturnStmt(self, ctx: JamScriptParser.ReturnStmtContext):
         if ctx.expr():
             val, vtype = self.visit(ctx.expr())
+            
+            # Handle struct returns - if returning a struct variable, load its value
+            if hasattr(self.func.function_type.return_type, '_field_names'):
+                if vtype == 'struct_ptr':
+                    val = self.builder.load(val)
+                # vtype == 'struct' means val is already a struct value
+            
             if isinstance(self.func.function_type.return_type, ir.DoubleType) and vtype == 'int':
                 val = self.builder.sitofp(val, self.flt)
             self.builder.ret(val)
@@ -631,9 +677,9 @@ class LLVMCodeGen(JamScriptVisitor):
         if ctx.leftHandSide():
             ptr, llvm_t = self._resolve_lhs_ptr(ctx.leftHandSide())
 
-            # se for struct → RETORNA O PRÓPRIO PONTEIRO
+            # se for struct → retorna ponteiro direto para ser usado conforme contexto
             if isinstance(llvm_t, ir.IdentifiedStructType):
-                return ptr, 'ptr'
+                return ptr, 'struct_ptr'
 
             # caso contrário, primitivo → load
             val = self.builder.load(ptr)
@@ -657,8 +703,16 @@ class LLVMCodeGen(JamScriptVisitor):
                 # sempre deixe o visitor decidir o valor e o tipo
                 val, vtype = self.visit(e)
 
-                # se for struct: val já é ponteiro -> passe direto
-                if vtype == 'ptr':
+                # se for struct_ptr: val é ponteiro para struct, usar direto
+                if vtype == 'struct_ptr':
+                    args.append(val)
+                elif vtype == 'struct':
+                    # Alocar temporário e armazenar o struct value
+                    temp_ptr = self.builder.alloca(val.type)
+                    self.builder.store(val, temp_ptr)
+                    args.append(temp_ptr)
+                elif vtype == 'ptr':
+                    # Já é ponteiro, usar direto
                     args.append(val)
                 else:
                     # primitivo: valor imediato
@@ -674,6 +728,8 @@ class LLVMCodeGen(JamScriptVisitor):
             return ret, 'float'
         if isinstance(rty, ir.VoidType):
             return None, 'void'
+        if hasattr(rty, '_field_names'):  # Direct struct type
+            return ret, 'struct'
 
         return ret, 'ptr'
 

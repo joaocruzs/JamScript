@@ -1,5 +1,8 @@
 
 import sys
+import os
+import subprocess
+from pathlib import Path
 from antlr4 import *
 from antlr4.error.ErrorListener import ErrorListener
 from backend.codegen import LLVMCodeGen
@@ -107,11 +110,72 @@ def main():
     # visita a árvore e gera IR
     codegen.visit(tree)
 
-    # salva no arquivo .ll correspondente
-    outfile = input_file.replace(".txt", ".ll")
-    codegen.write_ir(outfile)
+    # Criar diretórios de saída
+    llvm_dir = Path("llvm")
+    obj_dir = Path("objeto")
+    exe_dir = Path("executaveis")
+    
+    llvm_dir.mkdir(exist_ok=True)
+    obj_dir.mkdir(exist_ok=True)
+    exe_dir.mkdir(exist_ok=True)
 
-    print(f"### LLVM gerado em: {outfile} ###")
+    # Determinar nome base do arquivo
+    input_path = Path(input_file)
+    base_name = input_path.stem
+    
+    # Caminhos dos arquivos de saída
+    ll_file = llvm_dir / f"{base_name}.ll"
+    obj_file = obj_dir / f"{base_name}.o"
+    exe_file = exe_dir / f"{base_name}.exe"
+
+    # Salvar LLVM IR
+    codegen.write_ir(str(ll_file))
+    print(f"### LLVM IR gerado: {ll_file} ###")
+
+    # Compilar .ll para .o usando clang
+    compilation_success = False
+    
+    # 1. Tentar com clang (Padrão/MSVC)
+    try:
+        print("### Tentando Clang (Padrão)... ###")
+        # Compilar
+        res_c = subprocess.run(["clang", "-c", str(ll_file), "-o", str(obj_file)], capture_output=True, text=True)
+        if res_c.returncode != 0: raise Exception("Clang compile failed")
+        
+        # Linkar
+        res_l = subprocess.run(["clang", str(obj_file), "-o", str(exe_file)], capture_output=True, text=True)
+        if res_l.returncode != 0: raise Exception("Clang link failed")
+
+        print(f"### Executável gerado com sucesso: {exe_file} ###")
+        print(f"### Para executar: {exe_file} ###")
+        compilation_success = True
+
+    except Exception:
+        # 2. Tentar com clang (Target MinGW)
+        try:
+            print("### Falha no padrão. Tentando Clang com target MinGW... ###")
+            target = "--target=x86_64-pc-windows-gnu"
+            
+            # Compilar
+            res_c = subprocess.run(["clang", target, "-c", str(ll_file), "-o", str(obj_file)], capture_output=True, text=True)
+            if res_c.returncode != 0: 
+                print(f"[ERRO] Clang falhou na compilação: {res_c.stderr}")
+                raise Exception("Clang MinGW compile failed")
+
+            # Linkar
+            res_l = subprocess.run(["clang", target, str(obj_file), "-o", str(exe_file)], capture_output=True, text=True)
+            if res_l.returncode != 0: 
+                print(f"[ERRO] Clang falhou na linkagem: {res_l.stderr}")
+                raise Exception("Clang MinGW link failed")
+            
+            print(f"### Executável gerado com sucesso: {exe_file} ###")
+            print(f"### Para executar: {exe_file} ###")
+            compilation_success = True
+        
+        except Exception:
+            print("[ERRO] Não foi possível compilar o executável com Clang.")
+            print("Verifique se o LLVM está instalado corretamente e se há um ambiente de desenvolvimento (VS Build Tools ou MinGW) disponível.")
+
     print("aceito")
 
 

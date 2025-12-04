@@ -8,7 +8,6 @@ define void @"show"(i8* %"x")
 {
 entry:
   %"x.1" = alloca i8*
-body:
   store i8* %"x", i8** %"x.1"
   %".4" = load i8*, i8** %"x.1"
   %".5" = bitcast [3 x i8]* @".str.0" to i8*
@@ -20,7 +19,6 @@ body:
 define i32 @"main"()
 {
 entry:
-body:
   %".2" = bitcast [7 x i8]* @".str.1" to i8*
   call void @"show"(i8* %".2")
   ret i32 0

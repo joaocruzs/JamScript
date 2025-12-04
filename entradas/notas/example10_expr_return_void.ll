@@ -8,7 +8,6 @@ define void @"logBool"(i1 %"b")
 {
 entry:
   %"b.1" = alloca i1
-body:
   store i1 %"b", i1* %"b.1"
   %".4" = load i1, i1* %"b.1"
   %".5" = zext i1 %".4" to i32
@@ -22,7 +21,6 @@ define i32 @"main"()
 {
 entry:
   %"flag" = alloca i1
-body:
   %".2" = icmp sgt i32 10, 3
   %".3" = and i1 1, %".2"
   store i1 %".3", i1* %"flag"
