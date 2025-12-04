@@ -7,9 +7,9 @@ struct Coord {
 function somaVet(a:Coord, b:Coord): Coord {
     let x: int;
     let y: int;
+    let r:Coord;
     x = a.x + b.x;
     y = a.y + b.y;
-    let r:Coord;
     r.x = x;
     r.y = y;
     return r;
@@ -18,9 +18,9 @@ function somaVet(a:Coord, b:Coord): Coord {
 main { 
     let m:Coord;
     let n:Coord;
+    let z:Coord;
     m.x = 2; m.y = 3;
     n.x = 30; n.y = 50;
-    let z:Coord;
     z = somaVet(m, n);
     print(z.x);
     print(z.y);

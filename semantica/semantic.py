@@ -24,6 +24,10 @@ class SemanticAnalyzer(JamScriptVisitor):
         self.current_function = None
         self.current_function_return = None
         self.main_count = 0
+        # Stack para controlar se comandos já foram encontrados em cada bloco
+        self.block_has_commands_stack = []
+        # Stack para controlar se estamos dentro de loops (para validação de break)
+        self.in_loop_stack = []
 
     # ========== Helpers ==========
     def error(self, ctx, msg):
@@ -65,6 +69,19 @@ class SemanticAnalyzer(JamScriptVisitor):
         if typ is None:
             self.error(ctx, f"Tipo '{type_name}' não definido{context}")
         return typ or type_name
+    
+    def check_declaration_order(self, ctx, var_name):
+        """Verifica se a declaração está acontecendo após comandos no bloco atual"""
+        if (self.block_has_commands_stack and 
+            len(self.block_has_commands_stack) > 0 and 
+            self.block_has_commands_stack[-1]):
+            self.error(ctx, f"Declaração da variável '{var_name}' após comandos no bloco. "
+                           f"Todas as declarações devem aparecer antes dos comandos.")
+    
+    def check_break_context(self, ctx):
+        """Verifica se break está sendo usado dentro de um loop"""
+        if not self.in_loop_stack or not any(self.in_loop_stack):
+            self.error(ctx, "'break' só pode ser usado dentro de loops (while ou for).")
 
     # ========== Program ==========
     def visitProgram(self, ctx: JamScriptParser.ProgramContext):
@@ -131,6 +148,7 @@ class SemanticAnalyzer(JamScriptVisitor):
                 func_sym.add_param(pname, ptype)
                 self.safe_define(param, VarSymbol(pname, ptype, is_const=False))
         
+        # Função tem seu próprio controle de declarações/comandos
         self.visit(ctx.block())
         
         # Verifica return em funções não-void
@@ -152,20 +170,39 @@ class SemanticAnalyzer(JamScriptVisitor):
     # ========== Main & Blocks ==========
     def visitMainBlock(self, ctx: JamScriptParser.MainBlockContext):
         self.main_count += 1
+        # Main também precisa do controle de declarações/comandos
         self.visit(ctx.block())
 
     def visitBlock(self, ctx: JamScriptParser.BlockContext):
         self.stmgr.push_scope("block")
+        # Inicia um novo controle para este bloco (ainda não encontrou comandos)
+        self.block_has_commands_stack.append(False)
+        
+        # Primeiro processa todas as declarações
         for decl in ctx.decl():
             self.visit(decl)
+        
+        # Marca que agora vamos processar comandos
+        if len(self.block_has_commands_stack) > 0:
+            self.block_has_commands_stack[-1] = True
+            
+        # Processa todos os comandos
         for stmt in ctx.stmt():
             self.visit(stmt)
+            
+        # Remove o controle deste bloco
+        if self.block_has_commands_stack:
+            self.block_has_commands_stack.pop()
         self.stmgr.pop_scope()
 
     # ========== Declarations ==========
     def visitVarDecl(self, ctx: JamScriptParser.VarDeclContext):
         is_const = ctx.CONST() is not None
         name = ctx.ID().getText()
+        
+        # Verifica se a declaração está sendo feita após comandos
+        self.check_declaration_order(ctx, name)
+        
         typ = self.check_type_defined(ctx, ctx.type_().getText(), 
                                       f" para {'constante' if is_const else 'variável'} '{name}'")
         
@@ -183,6 +220,14 @@ class SemanticAnalyzer(JamScriptVisitor):
                                f"{self.type_to_str(typ)} <- {self.type_to_str(val_type)}")
 
     # ========== Statements ==========
+    def visitSimpleStmt(self, ctx: JamScriptParser.SimpleStmtContext):
+        # Verifica se é um break
+        if ctx.BREAK():
+            self.check_break_context(ctx)
+        else:
+            # Processa normalmente outros tipos de simpleStmt
+            return self.visitChildren(ctx)
+
     def visitAssignStmt(self, ctx: JamScriptParser.AssignStmtContext):
         lhs_type, lhs_sym, _ = self._resolve_lhs(ctx.leftHandSide())
         
@@ -255,7 +300,13 @@ class SemanticAnalyzer(JamScriptVisitor):
         cond_type = self.visit(ctx.expr())
         if cond_type != 'bool':
             self.error(ctx.expr(), f"Expressão de condição do while deve ser bool, encontrado {self.type_to_str(cond_type)}")
+        
+        # Entrar em contexto de loop
+        self.in_loop_stack.append(True)
         self.visit(ctx.block())
+        # Sair do contexto de loop
+        if self.in_loop_stack:
+            self.in_loop_stack.pop()
 
     def visitForStmt(self, ctx: JamScriptParser.ForStmtContext):
         self.stmgr.push_scope("for")
@@ -267,7 +318,13 @@ class SemanticAnalyzer(JamScriptVisitor):
             self.error(ctx, f"Condição do for deve ser bool ou int, recebeu {self.type_to_str(cond_type)}")
         
         self.visit(ctx.forUpdate())
+        
+        # Entrar em contexto de loop
+        self.in_loop_stack.append(True)
         self.visit(ctx.block())
+        # Sair do contexto de loop
+        if self.in_loop_stack:
+            self.in_loop_stack.pop()
         
         self.stmgr.pop_scope()
 
@@ -314,6 +371,11 @@ class SemanticAnalyzer(JamScriptVisitor):
             
             if sym.type != "int":
                 self.error(ctx, f"Operador ++/-- só permitido para int, recebeu {self.type_to_str(sym.type)}")
+                return None
+                
+            if getattr(sym, 'is_const', False):
+                self.error(ctx, f"Operador ++/-- não pode ser aplicado à constante '{name}'.")
+                return None
         
         return "int"
 
