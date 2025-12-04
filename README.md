@@ -27,6 +27,8 @@ Este projeto consiste em um compilador para a linguagem **JamScript**, capaz de 
   * `llvmlite`
 * **LLVM / Clang** (Instalado e adicionado ao PATH do sistema para compilação do executável).
 
+> **Observação:** Recomenda-se executar os comandos via terminal externo (fora de IDEs). No VS Code, por exemplo, pode ser necessário realizar o download e configuração do Build Tools for Visual Studio para o correto funcionamento, o que dificulta o uso.
+
 ## Como Usar
 
 Certifique-se de estar no diretório raiz do projeto (`JamScript/`) antes de executar os comandos.
