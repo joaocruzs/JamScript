@@ -1,0 +1,10 @@
+program Test5;
+
+main {
+    let x: int = 5;
+    if (x > 3) {
+        print("maior");
+    } else {
+        print("menor");
+    }
+}

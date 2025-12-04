@@ -1,0 +1,11 @@
+program Test10;
+
+function logBool(b: bool): void {
+    print(b);
+    return;
+}
+
+main {
+    let flag: bool = true && (10 > 3);
+    logBool(flag);
+}
