@@ -735,8 +735,44 @@ class LLVMCodeGen(JamScriptVisitor):
 
     # ========== Output ==========
     def write_ir(self, filename="output.ll"):
+        # Workaround: llvmlite might not print struct definitions if they are not "used" in a specific way
+        # or due to context issues. We manually inject them.
+        
+        struct_defs = []
+        for name, sty in self.struct_types.items():
+            # sty is IdentifiedStructType
+            # We need to reconstruct the definition: %"Name" = type { ... }
+            
+            # elements might be None if opaque, but we set body in _ensure_struct_type
+            if not hasattr(sty, 'elements') or sty.elements is None:
+                continue
+                
+            elem_strs = []
+            for elem in sty.elements:
+                elem_strs.append(str(elem))
+            
+            def_str = f'%"{name}" = type {{ {", ".join(elem_strs)} }}'
+            struct_defs.append(def_str)
+            
+        module_str = str(self.module)
+        
+        # Inject after target datalayout or at the top
+        final_ir = module_str
+        if struct_defs:
+            lines = module_str.splitlines()
+            insert_idx = 0
+            for i, line in enumerate(lines):
+                if line.startswith('target') or line.startswith(';'):
+                    insert_idx = i + 1
+                else:
+                    break
+            
+            # Insert definitions with a blank line
+            lines[insert_idx:insert_idx] = [""] + struct_defs + [""]
+            final_ir = "\n".join(lines)
+
         with open(filename, "w", encoding="utf-8") as f:
-            f.write(str(self.module))
+            f.write(final_ir)
 
     def get_ir(self):
         return str(self.module)

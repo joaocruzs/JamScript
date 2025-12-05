@@ -4,6 +4,8 @@ Trabalho Final da disciplina de Compiladores, 2025.2 - UFPI.
 
 Este projeto consiste em um compilador para a linguagem **JamScript**, capaz de realizar análise léxica, sintática, semântica e geração de código nativo via LLVM.
 
+[Especificação da linguagem](https://github.com/joaocruzs/JamScript/blob/main/docs/TF%201%C2%AA%20Etapa%20(Especifica%C3%A7%C3%A3o).pdf)
+
 ## Equipe
 
 - [Ana Valéria](https://github.com/anavaleriasc)
@@ -18,6 +20,7 @@ Este projeto consiste em um compilador para a linguagem **JamScript**, capaz de 
 * `main.py` — Ponto de entrada principal do compilador.
 * `tests.py` — Script de testes automatizados.
 * `entradas/` — Exemplos de código fonte para teste.
+* `llvm/`, `objeto/`, `executaveis/` — Diretórios gerados automaticamente contendo os artefatos de compilação (.ll, .o, .exe).
 
 ## Requisitos
 
@@ -27,13 +30,17 @@ Este projeto consiste em um compilador para a linguagem **JamScript**, capaz de 
   * `llvmlite`
 * **LLVM / Clang** (Instalado e adicionado ao PATH do sistema para compilação do executável).
 
+> **Observação:** Recomenda-se executar os comandos via **PowerShell** em um terminal externo (fora de IDEs). No VS Code, por exemplo, pode ser necessário realizar o download e configuração do Build Tools for Visual Studio para o funcionamento correto, dificultando o uso.
+
 ## Como Usar
 
 Certifique-se de estar no diretório raiz do projeto (`JamScript/`) antes de executar os comandos.
 
 ### 1. Compilação (Source to Executable)
 
-Para compilar um arquivo fonte JamScript e gerar um executável:
+Para compilar um arquivo fonte JamScript e gerar um executável escreva um comando com a estrutura `python main.py + caminho da entrada`.
+
+Exemplo:
 
 ```bash
 python main.py entradas/acertos/e33.txt
